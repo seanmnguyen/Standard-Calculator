@@ -22,8 +22,6 @@ public class HelloApplication extends Application
     @Override
     public void start(Stage stage) throws IOException
     {
-        //FXMLLoader fxmlLoader = new FXMLLoader(HelloApplication.class.getResource("hello-view.fxml"));
-
         // display for inputs
         Text display = new Text();
         display.setFont(Font.font(36));
@@ -112,7 +110,6 @@ public class HelloApplication extends Application
                 }
             }
         }
-
 
         // special button event handlers
         equalBtn.setOnAction(actionEvent -> display.setText(evaluate(display.getText())));
