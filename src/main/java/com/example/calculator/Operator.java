@@ -9,14 +9,10 @@ public class Operator
         this.sign = sign;
         switch(sign)
         {
-            case "+", ("-"):
-                precedence = 1;
-                break;
-            case "*", "/":
-                precedence = 0;
-                break;
-            default:
-                break;
+            case "+", ("-") -> precedence = 2;
+            case "*", "/" -> precedence = 1;
+            case "^" -> precedence = 0;
+            default -> System.out.println("invalid operator");
         }
     }
 

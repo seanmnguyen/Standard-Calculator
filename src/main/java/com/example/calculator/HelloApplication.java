@@ -3,8 +3,6 @@ package com.example.calculator;
 import javafx.application.Application;
 import javafx.beans.binding.Bindings;
 import javafx.collections.ObservableList;
-import javafx.event.ActionEvent;
-import javafx.event.EventHandler;
 import javafx.scene.Node;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
@@ -28,8 +26,7 @@ public class HelloApplication extends Application
 
         // display for inputs
         Text display = new Text();
-        display.setFont(Font.font("Helvectia", 36));
-        boolean ready = true;
+        display.setFont(Font.font(36));
 
         // grid for the buttons
         VBox grid = new VBox();
@@ -47,7 +44,7 @@ public class HelloApplication extends Application
         Button divBtn = new Button("/");
         Button equalBtn = new Button("=");
         Button clearBtn = new Button("C");
-        Button offBtn = new Button("OFF");
+        Button expBtn = new Button("^");
         Button delBtn = new Button("DEL");
         Button decimalBtn = new Button(".");
 
@@ -68,6 +65,7 @@ public class HelloApplication extends Application
         subBtn.setFont(Font.font(30));
         multBtn.setFont(Font.font(20));
         divBtn.setFont(Font.font(20));
+        expBtn.setFont(Font.font(20));
         equalBtn.setFont(Font.font(20));
 
         // text wrapping on display
@@ -75,7 +73,7 @@ public class HelloApplication extends Application
 
         // add buttons to the rows
         row0.getChildren().addAll(display);
-        row1.getChildren().addAll(offBtn, clearBtn, delBtn, divBtn);
+        row1.getChildren().addAll(delBtn, clearBtn, expBtn, divBtn);
         row2.getChildren().addAll(sevenBtn, eightBtn, nineBtn, multBtn);
         row3.getChildren().addAll(fourBtn, fiveBtn, sixBtn, subBtn);
         row4.getChildren().addAll(oneBtn, twoBtn, threeBtn, addBtn);
@@ -83,8 +81,8 @@ public class HelloApplication extends Application
 
         // add the rows to the grid (vertical box)
         grid.getChildren().addAll(row0, row1, row2, row3, row4, row5);
-        ArrayList<String> specials = new ArrayList<String>(Arrays.asList(offBtn.getText(), delBtn.getText(),
-                                                                            equalBtn.getText(), clearBtn.getText()));
+        ArrayList<String> specials = new ArrayList<>(Arrays.asList(delBtn.getText(), equalBtn.getText(),
+                                                                    clearBtn.getText()));
 
         // Button actions
         ObservableList<Node> vnodes = grid.getChildren();
@@ -94,24 +92,21 @@ public class HelloApplication extends Application
             for(Node node: hrow.getChildren())
             {
                 Button btn = (Button) node;
-                if(!specials.contains(btn)) // btn is not special, make event handler to print the button text
+                if(!specials.contains(btn.getText())) // btn is not special, make event handler to print the button text
                 {
                     if(isOperator(btn.getText())) // operator event handler
                     {
-                        btn.setOnAction(new EventHandler<ActionEvent>() {
-                            @Override
-                            public void handle(ActionEvent actionEvent) {
-                                display.setText(display.getText() + " " + btn.getText() + " ");
-                            }
+                        btn.setOnAction(actionEvent -> {
+                            checkText(display, btn);
+                            display.setText(display.getText() + " " + btn.getText() + " ");
                         });
                     }
                     else // number + decimal event handler
                     {
-                        btn.setOnAction(new EventHandler<ActionEvent>() {
-                            @Override
-                            public void handle(ActionEvent actionEvent) {
-                                display.setText(display.getText() + btn.getText());
-                            }
+                        btn.setOnAction(actionEvent -> {
+                            checkText(display, btn);
+                            checkZero(display, btn);
+                            display.setText(display.getText() + btn.getText());
                         });
                     }
                 }
@@ -120,41 +115,22 @@ public class HelloApplication extends Application
 
 
         // special button event handlers
-        equalBtn.setOnAction(new EventHandler<ActionEvent>() {
-            @Override
-            public void handle(ActionEvent actionEvent) {
-                display.setText(evaluate(display.getText()));
-            }
-        });
-        clearBtn.setOnAction(new EventHandler<ActionEvent>() {
-            @Override
-            public void handle(ActionEvent actionEvent) {
-                display.setText("0");
-            }
-        });
-        offBtn.setOnAction(new EventHandler<ActionEvent>() {
-            @Override
-            public void handle(ActionEvent actionEvent) {
-                stage.close();
-            }
-        });
-        delBtn.setOnAction(new EventHandler<ActionEvent>() {
-            @Override
-            public void handle(ActionEvent actionEvent) {
-                String exp = display.getText();
-                if(exp.length() > 1)
+        equalBtn.setOnAction(actionEvent -> display.setText(evaluate(display.getText())));
+        clearBtn.setOnAction(actionEvent -> display.setText("0"));
+        delBtn.setOnAction(actionEvent -> {
+            String exp = display.getText();
+            if(exp.length() > 1)
+            {
+                int end = exp.length()-1;
+                if(" ".equals(exp.substring(exp.length()-1)))
                 {
-                    int end = exp.length()-1;
-                    if(" ".equals(exp.substring(exp.length()-1)))
-                    {
-                        end -= 2;
-                    }
-                    display.setText(exp.substring(0, end));
+                    end -= 2;
                 }
-                else
-                {
-                    display.setText("");
-                }
+                display.setText(exp.substring(0, end));
+            }
+            else
+            {
+                display.setText("");
             }
         });
 
@@ -204,7 +180,7 @@ public class HelloApplication extends Application
     public String evaluate(String expression)
     {
         // splits the expression into a space-separated ArrayList
-        List<String> terms = new ArrayList<String>(Arrays.asList(expression.split(" ", 0)));
+        List<String> terms = new ArrayList<>(Arrays.asList(expression.split(" ", 0)));
 
         // continues until there is only 1 term left (the result)
         while(terms.size() > 1)
@@ -235,7 +211,7 @@ public class HelloApplication extends Application
                 Double res = calc(term1, term2, operator);
                 if(res == null)
                 {
-                    return "Error: invalid input";
+                    return "Error";
                 }
                 else
                 {
@@ -246,7 +222,7 @@ public class HelloApplication extends Application
             else
             {
                 System.out.println("Terms are invalid!");
-                return "Terms are invalid";
+                return "Error";
             }
         }
         System.out.println("Done: " + terms.get(0));
@@ -255,14 +231,14 @@ public class HelloApplication extends Application
 
     public boolean isOperator(String s)
     {
-        return s.equals("+") || s.equals("-") || s.equals("*") || s.equals("/");
+        return s.equals("+") || s.equals("-") || s.equals("*") || s.equals("/") || s.equals("^");
     }
 
     public boolean validate(String num)
     {
         try
         {
-            double test = Double.parseDouble(num);
+            Double.parseDouble(num);
             return true;
         }
         catch(NumberFormatException e)
@@ -281,6 +257,7 @@ public class HelloApplication extends Application
                 case "-" -> res = operand1 - operand2;
                 case "*" -> res = operand1 * operand2;
                 case "/" -> res = operand1 / operand2;
+                case "^" -> res = Math.pow(operand1, operand2);
                 default -> System.out.println("Computation Error");
             }
             return res;
@@ -289,6 +266,30 @@ public class HelloApplication extends Application
         {
             System.out.println("Calculation error");
             return null;
+        }
+    }
+
+    public void checkText(Text display, Button btn)
+    {
+        if("Error".equals(display.getText()) || "Infinity".equals(display.getText()) ||
+                "-Infinity".equals(display.getText()) || "NaN".equals(display.getText()))
+        {
+            if(".".equals(btn.getText())) // button is a decimal, add a zero before adding a decimal point
+            {
+                display.setText("0");
+            }
+            else
+            {
+                display.setText(""); // button clicked resets the display
+            }
+        }
+    }
+
+    public void checkZero(Text display, Button btn)
+    {
+        if("0".equals(display.getText()) && !".".equals(btn.getText())) // only resets 0 if the button is not decimal
+        {
+            display.setText("");
         }
     }
 
