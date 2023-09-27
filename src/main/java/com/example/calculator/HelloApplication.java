@@ -2,9 +2,9 @@ package com.example.calculator;
 
 import javafx.application.Application;
 import javafx.beans.binding.Bindings;
+import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
-import javafx.fxml.FXMLLoader;
 import javafx.scene.Node;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
@@ -21,26 +21,6 @@ import java.util.List;
 
 public class HelloApplication extends Application
 {
-    private static final String ADD_BTN = new String("+");
-    private static final String SUB_BTN = new String("-");
-    private static final String MULT_BTN = new String("*");
-    private static final String DIV_BTN = new String("/");
-    private static final String EQUAL_BTN = new String("=");
-    private static final String CLEAR_BTN = new String("C");
-    private static final String OFF_BTN = new String("Off");
-    private static  final String DEL_BTN = new String("Del");
-    private static final String DECIMAL_BTN = new String(".");
-    private static final String ZERO_BTN = new String("0");
-    private static final String ONE_BTN = new String("1");
-    private static final String TWO_BTN = new String("2");
-    private static final String THREE_BTN = new String("3");
-    private static final String FOUR_BTN = new String("4");
-    private static final String FIVE_BTN = new String("5");
-    private static final String SIX_BTN = new String("6");
-    private static final String SEVEN_BTN = new String("7");
-    private static final String EIGHT_BTN = new String("8");
-    private static final String NINE_BTN = new String("9");
-
     @Override
     public void start(Stage stage) throws IOException
     {
@@ -48,7 +28,7 @@ public class HelloApplication extends Application
 
         // display for inputs
         Text display = new Text();
-        display.setFont(Font.font("Helvectia", 72));
+        display.setFont(Font.font("Helvectia", 36));
         boolean ready = true;
 
         // grid for the buttons
@@ -61,27 +41,37 @@ public class HelloApplication extends Application
         HBox row5 = new HBox();
 
         // Operators
-        Button addBtn = new Button(ADD_BTN);
-        Button subBtn = new Button(SUB_BTN);
-        Button multBtn = new Button(MULT_BTN);
-        Button divBtn = new Button(DIV_BTN);
-        Button equalBtn = new Button(EQUAL_BTN);
-        Button clearBtn = new Button(CLEAR_BTN);
-        Button offBtn = new Button(OFF_BTN);
-        Button delBtn = new Button(DEL_BTN);
-        Button decimalBtn = new Button(DECIMAL_BTN);
+        Button addBtn = new Button("+");
+        Button subBtn = new Button("-");
+        Button multBtn = new Button("*");
+        Button divBtn = new Button("/");
+        Button equalBtn = new Button("=");
+        Button clearBtn = new Button("C");
+        Button offBtn = new Button("OFF");
+        Button delBtn = new Button("DEL");
+        Button decimalBtn = new Button(".");
 
         // Numbers
-        Button zeroBtn = new Button(ZERO_BTN);
-        Button oneBtn = new Button(ONE_BTN);
-        Button twoBtn = new Button(TWO_BTN);
-        Button threeBtn = new Button(THREE_BTN);
-        Button fourBtn = new Button(FOUR_BTN);
-        Button fiveBtn = new Button(FIVE_BTN);
-        Button sixBtn = new Button(SIX_BTN);
-        Button sevenBtn = new Button(SEVEN_BTN);
-        Button eightBtn = new Button(EIGHT_BTN);
-        Button nineBtn = new Button(NINE_BTN);
+        Button zeroBtn = new Button("0");
+        Button oneBtn = new Button("1");
+        Button twoBtn = new Button("2");
+        Button threeBtn = new Button("3");
+        Button fourBtn = new Button("4");
+        Button fiveBtn = new Button("5");
+        Button sixBtn = new Button("6");
+        Button sevenBtn = new Button("7");
+        Button eightBtn = new Button("8");
+        Button nineBtn = new Button("9");
+
+        // format operator text size
+        addBtn.setFont(Font.font(20));
+        subBtn.setFont(Font.font(30));
+        multBtn.setFont(Font.font(20));
+        divBtn.setFont(Font.font(20));
+        equalBtn.setFont(Font.font(20));
+
+        // text wrapping on display
+        display.wrappingWidthProperty().bind(row0.widthProperty());
 
         // add buttons to the rows
         row0.getChildren().addAll(display);
@@ -89,36 +79,47 @@ public class HelloApplication extends Application
         row2.getChildren().addAll(sevenBtn, eightBtn, nineBtn, multBtn);
         row3.getChildren().addAll(fourBtn, fiveBtn, sixBtn, subBtn);
         row4.getChildren().addAll(oneBtn, twoBtn, threeBtn, addBtn);
-        row5.getChildren().addAll(zeroBtn, decimalBtn, equalBtn);
+        row5.getChildren().addAll(decimalBtn, zeroBtn, equalBtn);
 
         // add the rows to the grid (vertical box)
         grid.getChildren().addAll(row0, row1, row2, row3, row4, row5);
+        ArrayList<String> specials = new ArrayList<String>(Arrays.asList(offBtn.getText(), delBtn.getText(),
+                                                                            equalBtn.getText(), clearBtn.getText()));
 
         // Button actions
-        addBtn.setOnAction(new EventHandler<ActionEvent>() {
-            @Override
-            public void handle(ActionEvent actionEvent) {
-                display.setText(display.getText() + " " + ADD_BTN + " ");
+        ObservableList<Node> vnodes = grid.getChildren();
+        for(int i = 1; i < vnodes.size(); i++)
+        {
+            HBox hrow = (HBox)vnodes.get(i);
+            for(Node node: hrow.getChildren())
+            {
+                Button btn = (Button) node;
+                if(!specials.contains(btn)) // btn is not special, make event handler to print the button text
+                {
+                    if(isOperator(btn.getText())) // operator event handler
+                    {
+                        btn.setOnAction(new EventHandler<ActionEvent>() {
+                            @Override
+                            public void handle(ActionEvent actionEvent) {
+                                display.setText(display.getText() + " " + btn.getText() + " ");
+                            }
+                        });
+                    }
+                    else // number + decimal event handler
+                    {
+                        btn.setOnAction(new EventHandler<ActionEvent>() {
+                            @Override
+                            public void handle(ActionEvent actionEvent) {
+                                display.setText(display.getText() + btn.getText());
+                            }
+                        });
+                    }
+                }
             }
-        });
-        subBtn.setOnAction(new EventHandler<ActionEvent>() {
-            @Override
-            public void handle(ActionEvent actionEvent) {
-                display.setText(display.getText() + " " + SUB_BTN + " ");
-            }
-        });
-        multBtn.setOnAction(new EventHandler<ActionEvent>() {
-            @Override
-            public void handle(ActionEvent actionEvent) {
-                display.setText(display.getText() + " " + MULT_BTN + " ");
-            }
-        });
-        divBtn.setOnAction(new EventHandler<ActionEvent>() {
-            @Override
-            public void handle(ActionEvent actionEvent) {
-                display.setText(display.getText() + " " + DIV_BTN + " ");
-            }
-        });
+        }
+
+
+        // special button event handlers
         equalBtn.setOnAction(new EventHandler<ActionEvent>() {
             @Override
             public void handle(ActionEvent actionEvent) {
@@ -156,72 +157,6 @@ public class HelloApplication extends Application
                 }
             }
         });
-        decimalBtn.setOnAction(new EventHandler<ActionEvent>() {
-            @Override
-            public void handle(ActionEvent actionEvent) {
-                display.setText(display.getText() + DECIMAL_BTN);
-            }
-        });
-        zeroBtn.setOnAction(new EventHandler<ActionEvent>() {
-            @Override
-            public void handle(ActionEvent actionEvent) {
-                display.setText(display.getText() + ZERO_BTN);
-            }
-        });
-        oneBtn.setOnAction(new EventHandler<ActionEvent>() {
-            @Override
-            public void handle(ActionEvent actionEvent) {
-                display.setText(display.getText() + ONE_BTN);
-            }
-        });
-        twoBtn.setOnAction(new EventHandler<ActionEvent>() {
-            @Override
-            public void handle(ActionEvent actionEvent) {
-                display.setText(display.getText() + TWO_BTN);
-            }
-        });
-        threeBtn.setOnAction(new EventHandler<ActionEvent>() {
-            @Override
-            public void handle(ActionEvent actionEvent) {
-                display.setText(display.getText() + THREE_BTN);
-            }
-        });
-        fourBtn.setOnAction(new EventHandler<ActionEvent>() {
-            @Override
-            public void handle(ActionEvent actionEvent) {
-                display.setText(display.getText() + FOUR_BTN);
-            }
-        });
-        fiveBtn.setOnAction(new EventHandler<ActionEvent>() {
-            @Override
-            public void handle(ActionEvent actionEvent) {
-                display.setText(display.getText() + FIVE_BTN);
-            }
-        });
-        sixBtn.setOnAction(new EventHandler<ActionEvent>() {
-            @Override
-            public void handle(ActionEvent actionEvent) {
-                display.setText(display.getText() + SIX_BTN);
-            }
-        });
-        sevenBtn.setOnAction(new EventHandler<ActionEvent>() {
-            @Override
-            public void handle(ActionEvent actionEvent) {
-                display.setText(display.getText() + SEVEN_BTN);
-            }
-        });
-        eightBtn.setOnAction(new EventHandler<ActionEvent>() {
-            @Override
-            public void handle(ActionEvent actionEvent) {
-                display.setText(display.getText() + EIGHT_BTN);
-            }
-        });
-        nineBtn.setOnAction(new EventHandler<ActionEvent>() {
-            @Override
-            public void handle(ActionEvent actionEvent) {
-                display.setText(display.getText() + NINE_BTN);
-            }
-        });
 
         // fill width
         grid.prefWidthProperty().bind(stage.widthProperty());
@@ -255,15 +190,11 @@ public class HelloApplication extends Application
             }
         }
 
-        zeroBtn.prefWidthProperty().bind(Bindings.divide(row5.widthProperty(), 2));
-        zeroBtn.minWidthProperty().bind(Bindings.divide(row5.widthProperty(), 2));
-
-
+        equalBtn.prefWidthProperty().bind(Bindings.divide(row5.widthProperty(), 2));
+        equalBtn.minWidthProperty().bind(Bindings.divide(row5.widthProperty(), 2));
 
         // create scene add scene to stage
         Scene scene = new Scene(grid, 400, 560);
-
-
 
         stage.setTitle("Calculator!");
         stage.setScene(scene);
@@ -302,12 +233,20 @@ public class HelloApplication extends Application
                 terms.remove(opIdx);
                 term1 = Double.parseDouble(terms.remove(opIdx-1));
                 Double res = calc(term1, term2, operator);
-                terms.add(opIdx-1, res.toString());
-                System.out.println(term1 + operator.getSign() + term2 + "=" + res);
+                if(res == null)
+                {
+                    return "Error: invalid input";
+                }
+                else
+                {
+                    terms.add(opIdx - 1, res.toString());
+                    System.out.println(term1 + operator.getSign() + term2 + "=" + res);
+                }
             }
             else
             {
                 System.out.println("Terms are invalid!");
+                return "Terms are invalid";
             }
         }
         System.out.println("Done: " + terms.get(0));
@@ -335,26 +274,22 @@ public class HelloApplication extends Application
 
     public Double calc(double operand1, double operand2, Operator operator)
     {
-        double res = 0;
-        switch(operator.getSign())
-        {
-            case "+":
-                res = operand1 + operand2;
-                break;
-            case "-":
-                res = operand1 - operand2;
-                break;
-            case "*":
-                res = operand1 * operand2;
-                break;
-            case "/":
-                res = operand1 / operand2;
-                break;
-            default:
-                System.out.println("Computation Error");
-                break;
+        try {
+            double res = 0;
+            switch (operator.getSign()) {
+                case "+" -> res = operand1 + operand2;
+                case "-" -> res = operand1 - operand2;
+                case "*" -> res = operand1 * operand2;
+                case "/" -> res = operand1 / operand2;
+                default -> System.out.println("Computation Error");
+            }
+            return res;
         }
-        return res;
+        catch(Exception e)
+        {
+            System.out.println("Calculation error");
+            return null;
+        }
     }
 
     public static void main(String[] args)
